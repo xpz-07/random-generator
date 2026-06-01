@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机抽取器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .nav-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .nav-link {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #f5576c;
+            background: #fff0f3;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #f5576c;
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.6;
+        }
+
+        .form-group textarea:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.12);
+        }
+
+        .form-group textarea::placeholder {
+            color: #c0c0c0;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        .option-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .option-row .form-group {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+        }
+
+        .form-group input[type="number"]:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.12);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #f5576c;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            margin-top: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-row .btn {
+            flex: 1;
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-clear:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-copy {
+            background: #27ae60;
+        }
+
+        .btn-copy:hover {
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        /* ---- 快速预设 ---- */
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+            margin-top: -4px;
+        }
+
+        .preset-chip {
+            padding: 5px 12px;
+            background: #fff0f3;
+            color: #f5576c;
+            border: 1px solid #f9d0d9;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .preset-chip:hover {
+            background: #f5576c;
+            color: #fff;
+            border-color: #f5576c;
+        }
+
+        /* ---- 结果区域 ---- */
+        .result-area {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 2px dashed #eee;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .result-header h3 {
+            color: #333;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .result-count {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 48px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 52px;
+            min-height: 52px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 18px;
+            animation: popIn 0.4s ease forwards;
+            opacity: 0;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.2) rotate(-10deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0); }
+        }
+
+        /* 滚动动画效果 */
+        .rolling {
+            animation: roll 0.08s linear infinite;
+        }
+
+        @keyframes roll {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .empty-state {
+            color: #bbb;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s, top 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.show {
+            opacity: 1;
+            top: 32px;
+        }
+
+        /* ---- 历史记录 ---- */
+        .history {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #999;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .history span {
+            background: #f8f9fa;
+            padding: 3px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history span:hover {
+            background: #f5576c;
+            color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 18px;
+            }
+
+            .option-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .result-badge {
+                min-width: 44px;
+                min-height: 44px;
+                font-size: 16px;
+                padding: 6px 14px;
+                border-radius: 12px;
+            }
+
+            h1 { font-size: 24px; }
+
+            .btn-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <h1>🎰 随机抽取器</h1>
+        <p class="subtitle">输入你的内容，随机抽取。数字、文字、符号……什么都可以！</p>
+        <div class="nav-bar">
+            <a class="nav-link" href="index.html">🎲 随机数生成</a>
+            <a class="nav-link active" href="picker.html">🎰 随机抽取</a>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="form-group">
+            <label for="itemInput">📝 输入候选项（每行一个）</label>
+            <div class="presets" id="presets">
+                <span class="preset-chip" data-items="张三&#10;李四&#10;王五&#10;赵六&#10;陈七&#10;周八&#10;吴九&#10;郑十">👥 人名示例</span>
+                <span class="preset-chip" data-items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10">🔢 数字 1-10</span>
+                <span class="preset-chip" data-items="🍎&#10;🍊&#10;🍋&#10;🍇&#10;🍓&#10;🍑&#10;🥝&#10;🍒">🍉 水果</span>
+                <span class="preset-chip" data-items="学 Python&#10;学 Rust&#10;学 Go&#10;学前端&#10;写博客&#10;写开源项目&#10;刷 LeetCode&#10;看技术书&#10;写周报">💻 待办</span>
+                <span class="preset-chip" data-items="A&#10;B&#10;C&#10;D&#10;E&#10;F&#10;G&#10;H&#10;I&#10;J&#10;K&#10;L&#10;M&#10;N&#10;O&#10;P&#10;Q&#10;R&#10;S&#10;T&#10;U&#10;V&#10;W&#10;X&#10;Y&#10;Z">🔤 字母 A-Z</span>
+            </div>
+            <textarea id="itemInput" placeholder="每行输入一个候选项，例如：&#10;苹果&#10;香蕉&#10;橘子&#10;西瓜&#10;草莓&#10;..."></textarea>
+            <div class="hint" id="itemCount">已输入 0 个候选项</div>
+        </div>
+
+        <!-- 抽取设置 -->
+        <div class="option-row">
+            <div class="form-group">
+                <label for="pickCount">抽取个数</label>
+                <input type="number" id="pickCount" value="1" min="1" max="10000" step="1">
+            </div>
+            <div class="form-group">
+                <label class="checkbox-group">
+                    <input type="checkbox" id="allowRepeat" checked>
+                    <span>允许重复（放回抽取）</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- 按钮 -->
+        <div class="btn-row">
+            <button class="btn" id="pickBtn" onclick="pick()">🎯 抽取</button>
+            <button class="btn btn-copy" onclick="copyResult()" disabled id="copyBtn">📋 复制</button>
+            <button class="btn btn-clear" onclick="clearAll()">🗑 清空</button>
+        </div>
+
+        <!-- 结果 -->
+        <div class="result-area">
+            <div class="result-header">
+                <h3>🎉 抽取结果</h3>
+                <span class="result-count" id="resultCount"></span>
+            </div>
+            <div class="results" id="resultsContainer">
+                <span class="empty-state">输入候选项后点击「抽取」</span>
+            </div>
+            <div class="history" id="history"></div>
+        </div>
+    </div>
+
+    <script>
+        let pickedItems = [];
+        let historyLog = [];  // 最近 5 次结果
+
+        // ========== 预设 ==========
+        document.getElementById('presets').addEventListener('click', function(e) {
+            if (e.target.classList.contains('preset-chip')) {
+                const items = e.target.dataset.items;
+                document.getElementById('itemInput').value = items;
+                updateItemCount();
+            }
+        });
+
+        // ========== 输入计数 ==========
+        document.getElementById('itemInput').addEventListener('input', updateItemCount);
+
+        function updateItemCount() {
+            const items = getItems();
+            document.getElementById('itemCount').textContent =
+                items.length ? `已输入 ${items.length} 个候选项` : '已输入 0 个候选项';
+        }
+
+        function getItems() {
+            const raw = document.getElementById('itemInput').value;
+            return raw.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+        }
+
+        // ========== 抽取 ==========
+        function pick() {
+            const items = getItems();
+            const count = parseInt(document.getElementById('pickCount').value);
+            const allowRepeat = document.getElementById('allowRepeat').checked;
+            const errorMsg = document.getElementById('errorMsg');
+
+            errorMsg.classList.remove('show');
+
+            if (items.length === 0) {
+                showError('请先输入候选项');
+                return;
+            }
+
+            if (isNaN(count) || count <= 0 || count > 10000) {
+                showError('抽取个数需在 1 ~ 10000 之间');
+                return;
+            }
+
+            if (!allowRepeat && count > items.length) {
+                showError(`只有 ${items.length} 个候选项，无法不重复地抽取 ${count} 个`);
+                return;
+            }
+
+            // 抽取
+            pickedItems = [];
+
+            if (allowRepeat) {
+                // 放回抽取
+                for (let i = 0; i < count; i++) {
+                    const idx = Math.floor(Math.random() * items.length);
+                    pickedItems.push(items[idx]);
+                }
+            } else {
+                // 不放回：Fisher-Yates 洗牌 → 取前 N
+                const pool = [...items];
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                pickedItems = pool.slice(0, count);
+            }
+
+            // 记录历史
+            historyLog.unshift([...pickedItems]);
+            if (historyLog.length > 5) historyLog.pop();
+
+            renderResults();
+            renderHistory();
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = '⚠ ' + msg;
+            errorMsg.classList.add('show');
+        }
+
+        // ========== 渲染结果（带动画） ==========
+        function renderResults() {
+            const container = document.getElementById('resultsContainer');
+            const resultCount = document.getElementById('resultCount');
+            const copyBtn = document.getElementById('copyBtn');
+
+            container.innerHTML = '';
+
+            if (pickedItems.length === 0) {
+                container.innerHTML = '<span class="empty-state">输入候选项后点击「抽取」</span>';
+                resultCount.textContent = '';
+                copyBtn.disabled = true;
+                return;
+            }
+
+            resultCount.textContent = `共 ${pickedItems.length} 个`;
+            copyBtn.disabled = false;
+
+            pickedItems.forEach((item, index) => {
+                const badge = document.createElement('span');
+                badge.className = 'result-badge';
+                badge.style.animationDelay = (index * 0.06) + 's';
+                badge.textContent = item;
+                container.appendChild(badge);
+            });
+        }
+
+        // ========== 历史记录 ==========
+        function renderHistory() {
+            const container = document.getElementById('history');
+            if (historyLog.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = '<strong style="color:#aaa;">🕐 历史:</strong> ';
+            historyLog.forEach((items, i) => {
+                const span = document.createElement('span');
+                span.textContent = items.join(', ');
+                span.title = '点击回填';
+                span.addEventListener('click', () => {
+                    pickedItems = [...items];
+                    renderResults();
+                });
+                container.appendChild(span);
+            });
+        }
+
+        function clearAll() {
+            pickedItems = [];
+            historyLog = [];
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('resultCount').textContent = '';
+            document.getElementById('copyBtn').disabled = true;
+            document.getElementById('resultsContainer').innerHTML =
+                '<span class="empty-state">输入候选项后点击「抽取」</span>';
+            document.getElementById('history').innerHTML = '';
+        }
+
+        // ========== 复制 ==========
+        function copyResult() {
+            if (pickedItems.length === 0) return;
+
+            const text = pickedItems.join(', ');
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ 已复制: ' + text);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('✅ 已复制');
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ========== 快捷键 ==========
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey && document.activeElement?.tagName === 'TEXTAREA') {
+                e.preventDefault();
+                pick();
+            }
+        });
+    </script>
+</body>
+</html>

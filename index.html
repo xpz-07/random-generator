@@ -41,7 +41,35 @@
             text-align: center;
             color: #999;
             font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .nav-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
             margin-bottom: 24px;
+        }
+
+        .nav-link {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #667eea;
+            background: #f0e6ff;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
         }
 
         .form-group {
@@ -329,6 +357,10 @@
     <div class="container">
         <h1>🎲 随机数生成器</h1>
         <p class="subtitle">自定义范围 · 小数精度 · 一键复制</p>
+        <div class="nav-bar">
+            <a class="nav-link active" href="index.html">🎲 随机数生成</a>
+            <a class="nav-link" href="picker.html">🎰 随机抽取</a>
+        </div>
 
         <!-- 范围 -->
         <div class="range-row">
