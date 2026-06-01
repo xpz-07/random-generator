@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机数生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .range-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .range-row .form-group {
+            flex: 1;
+        }
+
+        .form-group input[type="number"],
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            background: #fff;
+        }
+
+        .form-group input[type="number"]:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .decimal-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .decimal-row .form-group:first-child {
+            flex: 1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-row .btn {
+            flex: 1;
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-clear:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-copy {
+            background: #27ae60;
+        }
+
+        .btn-copy:hover {
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        .result-area {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 2px dashed #eee;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .result-header h3 {
+            color: #333;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .result-count {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .number-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            height: 48px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            animation: popIn 0.35s ease forwards;
+            opacity: 0;
+            white-space: nowrap;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.3); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .empty-state {
+            color: #bbb;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 70px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .stat-item .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            word-break: break-all;
+        }
+
+        .stat-item .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s, top 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.show {
+            opacity: 1;
+            top: 32px;
+        }
+
+        /* checkbox 美化 */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 20px;
+            }
+
+            .range-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .decimal-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .number-badge {
+                min-width: 40px;
+                height: 40px;
+                font-size: 14px;
+                padding: 4px 8px;
+                border-radius: 10px;
+            }
+
+            h1 { font-size: 24px; }
+
+            .btn-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <h1>🎲 随机数生成器</h1>
+        <p class="subtitle">自定义范围 · 小数精度 · 一键复制</p>
+
+        <!-- 范围 -->
+        <div class="range-row">
+            <div class="form-group">
+                <label for="min">最小值</label>
+                <input type="number" id="min" value="1" step="any" placeholder="例: 1">
+            </div>
+            <div class="form-group">
+                <label for="max">最大值</label>
+                <input type="number" id="max" value="100" step="any" placeholder="例: 100">
+            </div>
+        </div>
+
+        <!-- 生成个数 + 小数点 -->
+        <div class="decimal-row">
+            <div class="form-group">
+                <label for="count">生成个数</label>
+                <input type="number" id="count" value="5" min="1" max="100000" step="1" placeholder="1 ~ 100000">
+            </div>
+            <div class="form-group">
+                <label for="decimalPlaces">小数点位数</label>
+                <select id="decimalPlaces">
+                    <option value="0">0 位（整数）</option>
+                    <option value="1">1 位</option>
+                    <option value="2" selected>2 位</option>
+                    <option value="3">3 位</option>
+                    <option value="4">4 位</option>
+                    <option value="5">5 位</option>
+                    <option value="6">6 位</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 允许重复 -->
+        <div class="form-group">
+            <label class="checkbox-group">
+                <input type="checkbox" id="allowRepeat" checked>
+                <span>允许重复</span>
+            </label>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <!-- 按钮 -->
+        <div class="btn-row">
+            <button class="btn" id="generateBtn" onclick="generate()">🎯 生成</button>
+            <button class="btn btn-copy" onclick="copyResult()" disabled id="copyBtn">📋 复制</button>
+            <button class="btn btn-clear" onclick="clearResult()">🗑 清空</button>
+        </div>
+
+        <!-- 结果 -->
+        <div class="result-area">
+            <div class="result-header">
+                <h3>📋 生成结果</h3>
+                <span class="result-count" id="resultCount"></span>
+            </div>
+            <div class="numbers" id="numbersContainer">
+                <span class="empty-state">点击上方按钮生成随机数</span>
+            </div>
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="statSum">-</div>
+                    <div class="stat-label">总和</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statAvg">-</div>
+                    <div class="stat-label">平均值</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statUnique">-</div>
+                    <div class="stat-label">不重复数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statMin">-</div>
+                    <div class="stat-label">最小值</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statMax">-</div>
+                    <div class="stat-label">最大值</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let generatedNumbers = [];
+
+        // ========== 生成逻辑 ==========
+
+        function generate() {
+            const minEl   = document.getElementById('min');
+            const maxEl   = document.getElementById('max');
+            const countEl = document.getElementById('count');
+            const decEl   = document.getElementById('decimalPlaces');
+            const allowRepeat = document.getElementById('allowRepeat').checked;
+            const errorMsg    = document.getElementById('errorMsg');
+
+            const min       = parseFloat(minEl.value);
+            const max       = parseFloat(maxEl.value);
+            const count     = parseInt(countEl.value);
+            const decimals  = parseInt(decEl.value);
+
+            // 输入校验
+            if (isNaN(min) || isNaN(max) || isNaN(count)) {
+                showError('请填写完整的范围和个数');
+                return;
+            }
+
+            if (min > max) {
+                showError('最小值不能大于最大值');
+                return;
+            }
+
+            if (count <= 0 || count > 100000) {
+                showError('个数需在 1 ~ 100000 之间');
+                return;
+            }
+
+            errorMsg.classList.remove('show');
+
+            // 不允许重复时：只有整数模式才可行
+            const isIntegerMode = decimals === 0 && Number.isInteger(min) && Number.isInteger(max);
+
+            if (!allowRepeat && !isIntegerMode) {
+                showError('「不允许重复」仅在整数模式下可用，请先将小数点设为 0 位');
+                return;
+            }
+
+            if (!allowRepeat && isIntegerMode) {
+                const rangeSize = max - min + 1;
+                if (count > rangeSize) {
+                    showError(`范围内只有 ${rangeSize} 个整数，无法生成 ${count} 个不重复的数`);
+                    return;
+                }
+            }
+
+            // 生成
+            generatedNumbers = [];
+
+            if (!allowRepeat && isIntegerMode) {
+                // Fisher-Yates 洗牌 → 取前 N 个
+                const all = [];
+                for (let i = min; i <= max; i++) all.push(i);
+                for (let i = all.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [all[i], all[j]] = [all[j], all[i]];
+                }
+                generatedNumbers = all.slice(0, count);
+            } else {
+                for (let i = 0; i < count; i++) {
+                    const raw = Math.random() * (max - min) + min;
+                    generatedNumbers.push(roundTo(raw, decimals));
+                }
+            }
+
+            renderNumbers(decimals);
+            updateStats(decimals);
+        }
+
+        function roundTo(value, decimals) {
+            const factor = Math.pow(10, decimals);
+            return Math.round(value * factor) / factor;
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = '⚠ ' + msg;
+            errorMsg.classList.add('show');
+        }
+
+        // ========== 渲染 ==========
+
+        function renderNumbers(decimals) {
+            const container = document.getElementById('numbersContainer');
+            const resultCount = document.getElementById('resultCount');
+            const copyBtn = document.getElementById('copyBtn');
+
+            container.innerHTML = '';
+
+            if (generatedNumbers.length === 0) {
+                container.innerHTML = '<span class="empty-state">点击上方按钮生成随机数</span>';
+                resultCount.textContent = '';
+                copyBtn.disabled = true;
+                return;
+            }
+
+            resultCount.textContent = `共 ${generatedNumbers.length} 个`;
+            copyBtn.disabled = false;
+
+            generatedNumbers.forEach((num, index) => {
+                const badge = document.createElement('span');
+                badge.className = 'number-badge';
+                badge.style.animationDelay = (index * 0.04) + 's';
+                badge.textContent = formatNum(num, decimals);
+                container.appendChild(badge);
+            });
+        }
+
+        function formatNum(num, decimals) {
+            if (decimals === 0) return String(num);
+            return num.toFixed(decimals);
+        }
+
+        function updateStats(decimals) {
+            const statsEl = document.getElementById('stats');
+            if (generatedNumbers.length === 0) {
+                statsEl.style.display = 'none';
+                return;
+            }
+            statsEl.style.display = 'flex';
+
+            const sum = generatedNumbers.reduce((a, b) => a + b, 0);
+            const avg = sum / generatedNumbers.length;
+            const min = Math.min(...generatedNumbers);
+            const max = Math.max(...generatedNumbers);
+            const uniqueCount = new Set(generatedNumbers.map(n => formatNum(n, decimals))).size;
+
+            document.getElementById('statSum').textContent    = formatNum(sum, decimals);
+            document.getElementById('statAvg').textContent    = formatNum(avg, Math.min(decimals + 2, 10));
+            document.getElementById('statMin').textContent    = formatNum(min, decimals);
+            document.getElementById('statMax').textContent    = formatNum(max, decimals);
+            document.getElementById('statUnique').textContent = uniqueCount;
+        }
+
+        function clearResult() {
+            generatedNumbers = [];
+            document.getElementById('errorMsg').classList.remove('show');
+            renderNumbers(0);
+            updateStats(0);
+        }
+
+        // ========== 复制 ==========
+
+        function copyResult() {
+            if (generatedNumbers.length === 0) return;
+
+            const decimals = parseInt(document.getElementById('decimalPlaces').value);
+            const text = generatedNumbers.map(n => formatNum(n, decimals)).join(', ');
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ 已复制 ' + generatedNumbers.length + ' 个随机数');
+            }).catch(() => {
+                // fallback
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('✅ 已复制');
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ========== 快捷键 ==========
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.activeElement?.tagName === 'INPUT') {
+                e.preventDefault();
+                generate();
+            }
+        });
+    </script>
+</body>
+</html>
